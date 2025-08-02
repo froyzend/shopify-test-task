@@ -1,0 +1,99 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+
+<style>
+   .product-swiper {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .swiper-slide img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .swiper-button-next,
+  .swiper-button-prev {
+    color: black;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    top: 50%;
+  }
+  .swiper-button-next::after,
+  .swiper-button-prev::after {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  .swiper-button-next { right: 10px; }
+  .swiper-button-prev { left: 10px; }
+
+  @media (max-width: 767px) {
+    .product-swiper { max-width: 100%; }
+    .swiper-button-next, .swiper-button-prev {
+      width: 32px;
+      height: 32px;
+      font-size: 18px;
+    }
+  }
+</style>
+
+<div class="swiper product-swiper">
+  <div class="swiper-wrapper">
+    {% for media in product.media %}
+      {% if media.media_type == 'image' %}
+        <div class="swiper-slide">
+          <img src="{{ media | image_url: width: 450 }}" alt="{{ media.alt | escape }}">
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% if section.settings.show_navigation %}
+    <div class="swiper-button-next">&nbsp;</div>
+    <div class="swiper-button-prev">&nbsp;</div>
+  {% endif %}
+
+  {% if section.settings.show_pagination %}
+    <div class="swiper-pagination">&nbsp;</div>
+  {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const swiperOptions = {
+      loop: true,
+      spaceBetween: {{ section.settings.space_between | default: 10 }},
+      slidesPerView: 1, // десктоп по умолчанию
+      breakpoints: {
+        375: {
+          slidesPerView: 1, // мобильные
+        },
+        768: {
+          slidesPerView: 2, // планшеты
+        },
+        1200: {
+          slidesPerView: 1, // десктоп
+        },
+      },
+    };
+
+    {% if section.settings.show_navigation %}
+      swiperOptions.navigation = {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      };
+    {% endif %}
+
+    {% if section.settings.show_pagination %}
+      swiperOptions.pagination = {
+        el: '.swiper-pagination',
+        clickable: true,
+      };
+    {% endif %}
+
+    new Swiper('.product-swiper', swiperOptions);
+  });
+</script>
+

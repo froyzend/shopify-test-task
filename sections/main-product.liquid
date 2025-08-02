@@ -30,13 +30,40 @@
       padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
       padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
     }
-
-    @media screen and (min-width: 750px) {
-      .section-{{ section.id }}-padding {
-        padding-top: {{ section.settings.padding_top }}px;
-        padding-bottom: {{ section.settings.padding_bottom }}px;
-      }
+    .product {
+    display: flex;
+    gap: 40px;
+    flex-direction: column;
+    align-items: flex-start;
     }
+    .product__media-wrapper {
+    flex: 1 1 0;
+    max-width: 540px;
+    min-width: 0;
+    }
+    .product__info-wrapper {
+    flex: 1 1 0;
+    min-width: 0;
+    }
+    @media (min-width: 768px) {
+    .product {
+      gap: 24px;
+      
+    }
+    .product__media-wrapper {
+      max-width: 100%;
+      margin-bottom: 0;
+    }
+    .product__info-wrapper {
+      margin-top: 0;
+      padding-left: 0;
+    }
+  }
+  @media (min-width: 1024px){
+    .product{
+    
+    }
+  }
   {%- endstyle -%}
 
   <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
@@ -76,7 +103,7 @@
   <div class="page-width">
     <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} product--mobile-{{ section.settings.mobile_thumbnails }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">
       <div class="grid__item product__media-wrapper">
-        {% render 'product-media-gallery', variant_images: variant_images %}
+        {% render 'product-swiper' %}
       </div>
       <div class="product__info-wrapper grid__item{% if settings.page_width > 1400 and section.settings.media_size == "small" %} product__info-wrapper--extra-padding{% endif %}{% if settings.animations_reveal_on_scroll %} scroll-trigger animate--slide-in{% endif %}">
         <section
@@ -1870,7 +1897,7 @@
               "label": "t:sections.main-product.blocks.collapsible_tab.settings.icon.options__44.label"
             }
           ],
-          "default": "return",
+          "default": "truck",
           "label": "t:sections.main-product.blocks.icon_with_text.settings.icon_2.label"
         },
         {
@@ -2089,6 +2116,42 @@
     }
   ],
   "settings": [
+     {
+      "type": "checkbox",
+      "id": "show_navigation",
+      "label": "Show navigation arrows",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_pagination",
+      "label": "Show pagination dots",
+      "default": true
+    },
+    {
+      "type": "number",
+      "id": "space_between",
+      "label": "Space between slides (px)",
+      "default": 10
+    },
+    {
+      "type": "number",
+      "id": "slides_per_view_desktop",
+      "label": "Slides per view (desktop)",
+      "default": 2
+    },
+    {
+      "type": "number",
+      "id": "slides_per_view_tablet",
+      "label": "Slides per view (tablet)",
+      "default": 2
+    },
+    {
+      "type": "number",
+      "id": "slides_per_view_mobile",
+      "label": "Slides per view (mobile)",
+      "default": 1
+    },
     {
       "type": "checkbox",
       "id": "enable_sticky_info",
