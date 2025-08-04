@@ -37,15 +37,58 @@
   }
 
   .product-swiper {
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto;
+     max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   }
 
-  .swiper-slide img {
+  .swiper-slide {
+    position: relative;
+    background: #fff;
+   position: relative;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  overflow: hidden;
+  padding: 8px;
+  margin: 0 8px;
+  min-height: 320px;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  }
+
+  .product-image {
+    border-radius: 12px;
+    display: block;
     width: 100%;
     height: auto;
-    display: block;
+    object-fit: cover;
+  }
+
+  .product-swiper .swiper-slide:only-child {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+  .color-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: #e7f3e7;
+    color: #228B22;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 2px 12px;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    z-index: 2;
+    pointer-events: none;
+    border: 1px solid #d0e5d0;
+    letter-spacing: 0.03em;
   }
 
   .swiper-button-next,
@@ -83,6 +126,10 @@
       height: 32px;
       font-size: 18px;
     }
+    .swiper-slide {
+      min-width: 140px;
+      min-height: 120px;
+    }
   }
 </style>
 
@@ -91,6 +138,7 @@
     {% for media in product.media %}
       {% if media.media_type == 'image' %}
         <div class="swiper-slide" data-color="{{ media.alt | downcase }}">
+          <span class="color-badge">{{ media.alt }}</span>
           {{ media | image_url: width: 500 | image_tag: alt: media.alt, class: 'product-image', loading: 'lazy' }}
         </div>
       {% endif %}
@@ -98,12 +146,12 @@
   </div>
 
   {% if section.settings.show_navigation %}
-    <div class="swiper-button-next">&nbsp;</div>
-    <div class="swiper-button-prev">&nbsp;</div>
+    <div class="swiper-button-next">&nbsp</div>
+    <div class="swiper-button-prev">&nbsp</div>
   {% endif %}
 
   {% if section.settings.show_pagination %}
-    <div class="swiper-pagination">&nbsp;</div>
+    <div class="swiper-pagination"></div>
   {% endif %}
 </div>
 
