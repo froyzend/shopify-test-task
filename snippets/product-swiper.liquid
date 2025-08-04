@@ -1,16 +1,53 @@
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
 
 <style>
-   .product-swiper {
+  .product-main-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .gallery-container {
+    width: 100%;
+  }
+
+  .product-info {
+    width: 100%;
+  }
+
+  @media (min-width: 768px) {
+    .product-main-layout {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+
+    .gallery-container,
+    .product-info {
+      flex: 1;
+    }
+
+    .gallery-container {
+      max-width: 50%;
+    }
+
+    .product-info {
+      padding-left: 20px;
+    }
+  }
+
+  .product-swiper {
     width: 100%;
     max-width: 500px;
     margin: 0 auto;
   }
+
   .swiper-slide img {
     width: 100%;
     height: auto;
     display: block;
   }
+
   .swiper-button-next,
   .swiper-button-prev {
     color: black;
@@ -20,17 +57,28 @@
     height: 40px;
     top: 50%;
   }
+
   .swiper-button-next::after,
   .swiper-button-prev::after {
     font-size: 24px;
     font-weight: bold;
   }
-  .swiper-button-next { right: 10px; }
-  .swiper-button-prev { left: 10px; }
+
+  .swiper-button-next {
+    right: 10px;
+  }
+
+  .swiper-button-prev {
+    left: 10px;
+  }
 
   @media (max-width: 767px) {
-    .product-swiper { max-width: 100%; }
-    .swiper-button-next, .swiper-button-prev {
+    .product-swiper {
+      max-width: 100%;
+    }
+
+    .swiper-button-next,
+    .swiper-button-prev {
       width: 32px;
       height: 32px;
       font-size: 18px;
@@ -43,7 +91,7 @@
     {% for media in product.media %}
       {% if media.media_type == 'image' %}
         <div class="swiper-slide">
-          <img src="{{ media | image_url: width: 450 }}" alt="{{ media.alt | escape }}">
+          {{ media | image_url: width: 500 | image_tag: alt: media.alt, class: 'product-image', loading: 'lazy' }}
         </div>
       {% endif %}
     {% endfor %}
@@ -59,41 +107,40 @@
   {% endif %}
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const swiperOptions = {
+  function initProductSwiper() {
+    const swiperEl = document.querySelector('.product-swiper');
+
+    if (!swiperEl) return;
+
+    new Swiper(swiperEl, {
       loop: true,
       spaceBetween: {{ section.settings.space_between | default: 10 }},
-      slidesPerView: 1, // десктоп по умолчанию
+      slidesPerView: {{ section.settings.slides_per_view_mobile | default: 1 }},
       breakpoints: {
-        375: {
-          slidesPerView: 1, // мобильные
-        },
         768: {
-          slidesPerView: 2, // планшеты
+          slidesPerView: {{ section.settings.slides_per_view_tablet | default: 2 }},
         },
         1200: {
-          slidesPerView: 1, // десктоп
-        },
+          slidesPerView: {{ section.settings.slides_per_view_desktop | default: 3 }},
+        }
       },
-    };
-
-    {% if section.settings.show_navigation %}
-      swiperOptions.navigation = {
+      {% if section.settings.show_navigation %}
+      navigation: {
         nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev',
-      };
-    {% endif %}
-
-    {% if section.settings.show_pagination %}
-      swiperOptions.pagination = {
+        prevEl: '.swiper-button-prev'
+      },
+      {% endif %}
+      {% if section.settings.show_pagination %}
+      pagination: {
         el: '.swiper-pagination',
-        clickable: true,
-      };
-    {% endif %}
+        clickable: true
+      },
+      {% endif %}
+    });
+  }
 
-    new Swiper('.product-swiper', swiperOptions);
-  });
+  document.addEventListener('DOMContentLoaded', initProductSwiper);
+  document.addEventListener('shopify:section:load', initProductSwiper);
 </script>
-
