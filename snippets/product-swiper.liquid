@@ -90,7 +90,7 @@
   <div class="swiper-wrapper">
     {% for media in product.media %}
       {% if media.media_type == 'image' %}
-        <div class="swiper-slide">
+        <div class="swiper-slide" data-variant-ids="{{ media.variant_ids | join: ',' }}">
           {{ media | image_url: width: 500 | image_tag: alt: media.alt, class: 'product-image', loading: 'lazy' }}
         </div>
       {% endif %}
@@ -109,38 +109,58 @@
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
 <script>
-  function initProductSwiper() {
-    const swiperEl = document.querySelector('.product-swiper');
+  let swiperInstance;
+  let originalSlidesHTML = [];
 
-    if (!swiperEl) return;
+  document.addEventListener('DOMContentLoaded', () => {
+    const swiperWrapper = document.querySelector('.product-swiper .swiper-wrapper');
+    originalSlidesHTML = Array.from(swiperWrapper.children).map(slide => slide.outerHTML);
 
-    new Swiper(swiperEl, {
-      loop: true,
-      spaceBetween: {{ section.settings.space_between | default: 10 }},
-      slidesPerView: {{ section.settings.slides_per_view_mobile | default: 1 }},
-      breakpoints: {
-        768: {
-          slidesPerView: {{ section.settings.slides_per_view_tablet | default: 2 }},
+    function renderSlides(filteredSlidesHTML) {
+      swiperWrapper.innerHTML = filteredSlidesHTML.join('');
+    }
+
+    function initProductSwiper() {
+      if (swiperInstance) swiperInstance.destroy(true, true);
+      swiperInstance = new Swiper('.product-swiper', {
+        loop: true,
+        spaceBetween: {{ section.settings.space_between | default: 10 }},
+        slidesPerView: {{ section.settings.slides_per_view_mobile | default: 1 }},
+        breakpoints: {
+          768: { slidesPerView: {{ section.settings.slides_per_view_tablet | default: 2 }} },
+          1200: { slidesPerView: {{ section.settings.slides_per_view_desktop | default: 3 }} }
         },
-        1200: {
-          slidesPerView: {{ section.settings.slides_per_view_desktop | default: 3 }},
-        }
-      },
-      {% if section.settings.show_navigation %}
-      navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev'
-      },
-      {% endif %}
-      {% if section.settings.show_pagination %}
-      pagination: {
-        el: '.swiper-pagination',
-        clickable: true
-      },
-      {% endif %}
-    });
-  }
+        {% if section.settings.show_navigation %}
+        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        {% endif %}
+        {% if section.settings.show_pagination %}
+        pagination: { el: '.swiper-pagination', clickable: true },
+        {% endif %}
+      });
+    }
 
-  document.addEventListener('DOMContentLoaded', initProductSwiper);
-  document.addEventListener('shopify:section:load', initProductSwiper);
+    function filterSlidesByVariant(variantTitle) {
+      let filteredSlidesHTML = originalSlidesHTML.filter(slideHTML => {
+        // создаём временный элемент для проверки alt
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = slideHTML;
+        const img = tempDiv.querySelector('img');
+        if (!variantTitle) return true;
+        const isForAllVariants = !img.alt || img.alt === '';
+        return isForAllVariants || img.alt.toLowerCase() === variantTitle.toLowerCase();
+      });
+      renderSlides(filteredSlidesHTML);
+      initProductSwiper();
+    }
+
+    const colorRadios = document.querySelectorAll('input[type="radio"][name^="Color"]');
+    let initialTitle = '';
+    colorRadios.forEach((radio) => {
+      if (radio.checked) initialTitle = radio.value;
+      radio.addEventListener('change', (e) => {
+        filterSlidesByVariant(e.target.value);
+      });
+    });
+    filterSlidesByVariant(initialTitle);
+  });
 </script>
