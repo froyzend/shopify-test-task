@@ -90,7 +90,7 @@
   <div class="swiper-wrapper">
     {% for media in product.media %}
       {% if media.media_type == 'image' %}
-        <div class="swiper-slide" data-variant-ids="{{ media.variant_ids | join: ',' }}">
+        <div class="swiper-slide" data-color="{{ media.alt | downcase }}">
           {{ media | image_url: width: 500 | image_tag: alt: media.alt, class: 'product-image', loading: 'lazy' }}
         </div>
       {% endif %}
@@ -114,7 +114,10 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     const swiperWrapper = document.querySelector('.product-swiper .swiper-wrapper');
-    originalSlidesHTML = Array.from(swiperWrapper.children).map(slide => slide.outerHTML);
+    
+    if (!originalSlidesHTML.length) {
+      originalSlidesHTML = Array.from(swiperWrapper.children).map(slide => slide.outerHTML);
+    }
 
     function renderSlides(filteredSlidesHTML) {
       swiperWrapper.innerHTML = filteredSlidesHTML.join('');
@@ -141,26 +144,24 @@
 
     function filterSlidesByVariant(variantTitle) {
       let filteredSlidesHTML = originalSlidesHTML.filter(slideHTML => {
-        // создаём временный элемент для проверки alt
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = slideHTML;
-        const img = tempDiv.querySelector('img');
+        const slideDiv = tempDiv.querySelector('.swiper-slide');
         if (!variantTitle) return true;
-        const isForAllVariants = !img.alt || img.alt === '';
-        return isForAllVariants || img.alt.toLowerCase() === variantTitle.toLowerCase();
+        return slideDiv.getAttribute('data-color') === variantTitle.trim().toLowerCase();
       });
       renderSlides(filteredSlidesHTML);
       initProductSwiper();
     }
-
+    
     const colorRadios = document.querySelectorAll('input[type="radio"][name^="Color"]');
     let initialTitle = '';
     colorRadios.forEach((radio) => {
       if (radio.checked) initialTitle = radio.value;
       radio.addEventListener('change', (e) => {
-        filterSlidesByVariant(e.target.value);
+        filterSlidesByVariant(e.target.value.toLowerCase());
       });
     });
-    filterSlidesByVariant(initialTitle);
+    filterSlidesByVariant(initialTitle.toLowerCase());
   });
 </script>
