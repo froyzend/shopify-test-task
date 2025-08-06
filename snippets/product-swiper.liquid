@@ -7,60 +7,52 @@
     gap: 20px;
     align-items: flex-start;
   }
-
   .gallery-container {
     width: 100%;
   }
-
   .product-info {
     width: 100%;
   }
-
   @media (min-width: 768px) {
     .product-main-layout {
       flex-direction: row;
       justify-content: space-between;
     }
-
     .gallery-container,
     .product-info {
       flex: 1;
     }
-
     .gallery-container {
       max-width: 50%;
     }
-
     .product-info {
       padding-left: 20px;
     }
   }
-
   .product-swiper {
-     max-width: 500px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  }
-
-  .swiper-slide {
+    width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
     position: relative;
-    background: #fff;
-   position: relative;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-  overflow: hidden;
-  padding: 8px;
-  margin: 0 8px;
-  min-height: 320px;
-  min-width: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   }
-
+  .swiper-slide {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    min-height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .swiper-slide:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+  .product-swiper .swiper-slide:only-child {
+    margin-left: auto;
+    margin-right: auto;
+  }
   .product-image {
     border-radius: 12px;
     display: block;
@@ -68,58 +60,60 @@
     height: auto;
     object-fit: cover;
   }
-
-  .product-swiper .swiper-slide:only-child {
-  margin-left: auto;
-  margin-right: auto;
-}
-
   .color-badge {
     position: absolute;
     top: 12px;
     left: 12px;
     background: #e7f3e7;
-    color: #228B22;
+    color: #228b22;
     font-size: 14px;
     font-weight: 500;
     padding: 2px 12px;
     border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     z-index: 2;
     pointer-events: none;
     border: 1px solid #d0e5d0;
     letter-spacing: 0.03em;
   }
-
   .swiper-button-next,
   .swiper-button-prev {
-    color: black;
-    background-color: rgba(255, 255, 255, 0.7);
+    color: #333;
+    background-color: rgba(255, 255, 255, 0.85);
     border-radius: 50%;
     width: 40px;
     height: 40px;
     top: 50%;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+    position: absolute;
   }
-
+  .swiper-button-next:hover,
+  .swiper-button-prev:hover {
+    background-color: rgba(240, 240, 240, 1);
+  }
   .swiper-button-next::after,
   .swiper-button-prev::after {
     font-size: 24px;
     font-weight: bold;
   }
-
   .swiper-button-next {
     right: 10px;
   }
-
   .swiper-button-prev {
     left: 10px;
   }
-
+  .swiper-pagination {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+  }
   @media (max-width: 767px) {
     .product-swiper {
       max-width: 100%;
     }
-
     .swiper-button-next,
     .swiper-button-prev {
       width: 32px;
@@ -127,8 +121,15 @@
       font-size: 18px;
     }
     .swiper-slide {
-      min-width: 140px;
+      width: 140px;
       min-height: 120px;
+      margin: 0 auto;
+    }
+    .color-badge {
+      font-size: 12px;
+      padding: 2px 8px;
+      top: 8px;
+      left: 8px;
     }
   }
 </style>
@@ -144,15 +145,9 @@
       {% endif %}
     {% endfor %}
   </div>
-
-  {% if section.settings.show_navigation %}
-    <div class="swiper-button-next">&nbsp</div>
-    <div class="swiper-button-prev">&nbsp</div>
-  {% endif %}
-
-  {% if section.settings.show_pagination %}
-    <div class="swiper-pagination"></div>
-  {% endif %}
+  <div class="swiper-button-next"></div>
+  <div class="swiper-button-prev"></div>
+  <div class="swiper-pagination"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
@@ -162,54 +157,59 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     const swiperWrapper = document.querySelector('.product-swiper .swiper-wrapper');
-    
-    if (!originalSlidesHTML.length) {
-      originalSlidesHTML = Array.from(swiperWrapper.children).map(slide => slide.outerHTML);
-    }
 
-    function renderSlides(filteredSlidesHTML) {
-      swiperWrapper.innerHTML = filteredSlidesHTML.join('');
-    }
+    originalSlidesHTML = Array.from(swiperWrapper.children).map((slide) => slide.outerHTML);
 
-    function initProductSwiper() {
-      if (swiperInstance) swiperInstance.destroy(true, true);
-      swiperInstance = new Swiper('.product-swiper', {
-        loop: true,
-        spaceBetween: {{ section.settings.space_between | default: 10 }},
-        slidesPerView: {{ section.settings.slides_per_view_mobile | default: 1 }},
-        breakpoints: {
-          768: { slidesPerView: {{ section.settings.slides_per_view_tablet | default: 2 }} },
-          1200: { slidesPerView: {{ section.settings.slides_per_view_desktop | default: 3 }} }
-        },
-        {% if section.settings.show_navigation %}
-        navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
-        {% endif %}
-        {% if section.settings.show_pagination %}
-        pagination: { el: '.swiper-pagination', clickable: true },
-        {% endif %}
-      });
-    }
+    swiperInstance = new Swiper('.product-swiper', {
+      loop: false,
+      spaceBetween: 10,
+      slidesPerView: 1,
+      breakpoints: {
+        768: { slidesPerView: 2, spaceBetween: 16 },
+        1200: { slidesPerView: 3, spaceBetween: 24 },
+      },
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+      },
+    });
 
     function filterSlidesByVariant(variantTitle) {
-      let filteredSlidesHTML = originalSlidesHTML.filter(slideHTML => {
+      let currentIndex = swiperInstance.activeIndex;
+
+      let filteredSlidesHTML = originalSlidesHTML.filter((slideHTML) => {
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = slideHTML;
         const slideDiv = tempDiv.querySelector('.swiper-slide');
         if (!variantTitle) return true;
         return slideDiv.getAttribute('data-color') === variantTitle.trim().toLowerCase();
       });
-      renderSlides(filteredSlidesHTML);
-      initProductSwiper();
+
+      swiperInstance.removeAllSlides();
+
+      swiperInstance.appendSlide(filteredSlidesHTML);
+
+      swiperInstance.update();
+
+      swiperInstance.slideTo(0, 0);
     }
-    
-    const colorRadios = document.querySelectorAll('input[type="radio"][name^="Color"]');
-    let initialTitle = '';
+
+    const colorRadios = document.querySelectorAll(
+      'input[type="radio"][name^="Color"], input[type="radio"][name^="Couleur"]'
+    );
     colorRadios.forEach((radio) => {
-      if (radio.checked) initialTitle = radio.value;
       radio.addEventListener('change', (e) => {
         filterSlidesByVariant(e.target.value.toLowerCase());
       });
     });
-    filterSlidesByVariant(initialTitle.toLowerCase());
+
+    const checkedRadio = document.querySelector(
+      'input[type="radio"][name^="Color"]:checked, input[type="radio"][name^="Couleur"]:checked'
+    );
+    filterSlidesByVariant(checkedRadio ? checkedRadio.value.toLowerCase() : '');
   });
 </script>

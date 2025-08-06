@@ -25,54 +25,7 @@
     {{ 'component-volume-pricing.css' | asset_url | stylesheet_tag }}
   {%- endif -%}
 
-  {%- style -%}
-    .section-{{ section.id }}-padding {
-      padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
-      padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
-    }
 
-    .product {
-      display: flex;
-      flex-direction: column;
-      gap: 40px;
-      align-items: flex-start;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 16px;
-    }
-
-    .product__media-wrapper,
-    .product__info-wrapper {
-      width: 100%;
-    }
-
-    @media (min-width: 768px) {
-      .product {
-        flex-direction: row;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 40px;
-      }
-
-      .product__media-wrapper {
-        flex: 0 0 50%;
-        max-width: 50%;
-        margin-bottom: 0;
-      }
-
-      .product__info-wrapper {
-        flex: 0 0 50%;
-        max-width: 50%;
-        margin-top: 0;
-      }
-    }
-
-    @media (min-width: 1024px) {
-      .product {
-        gap: 64px;
-      }
-    }
-  {%- endstyle -%}
 
   <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
@@ -2146,13 +2099,13 @@
       "type": "number",
       "id": "slides_per_view_desktop",
       "label": "Slides per view (desktop)",
-      "default": 1
+      "default": 3
     },
     {
       "type": "number",
       "id": "slides_per_view_tablet",
       "label": "Slides per view (tablet)",
-      "default": 2
+      "default": 1
     },
     {
       "type": "number",
