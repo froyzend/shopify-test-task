@@ -25,8 +25,6 @@
     {{ 'component-volume-pricing.css' | asset_url | stylesheet_tag }}
   {%- endif -%}
 
-
-
   <script src="{{ 'product-info.js' | asset_url }}" defer="defer"></script>
   <script src="{{ 'product-form.js' | asset_url }}" defer="defer"></script>
   {%- if product.quantity_price_breaks_configured? -%}
@@ -2076,10 +2074,15 @@
       ]
     }
   ],
+
   "settings": [
     {
+      "type": "header",
+      "content": "Product Gallery (Swiper)"
+    },
+    {
       "type": "checkbox",
-      "id": "show_navigation",
+      "id": "show_navigation_arrows",
       "label": "Show navigation arrows",
       "default": true
     },
@@ -2090,28 +2093,73 @@
       "default": true
     },
     {
-      "type": "number",
-      "id": "space_between",
-      "label": "Space between slides (px)",
-      "default": 10
+      "type": "header",
+      "content": "Desktop Settings"
     },
     {
-      "type": "number",
+      "type": "range",
       "id": "slides_per_view_desktop",
-      "label": "Slides per view (desktop)",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "label": "Slides per view",
       "default": 3
     },
     {
-      "type": "number",
+      "type": "range",
+      "id": "space_between_desktop",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "label": "Space between slides",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Tablet Settings"
+    },
+    {
+      "type": "range",
       "id": "slides_per_view_tablet",
-      "label": "Slides per view (tablet)",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "label": "Slides per view",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "space_between_tablet",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Space between slides",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Mobile Settings"
+    },
+    {
+      "type": "range",
+      "id": "slides_per_view_mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "label": "Slides per view",
       "default": 1
     },
     {
-      "type": "number",
-      "id": "slides_per_view_mobile",
-      "label": "Slides per view (mobile)",
-      "default": 1
+      "type": "range",
+      "id": "space_between_mobile",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Space between slides",
+      "default": 10
     },
     {
       "type": "checkbox",

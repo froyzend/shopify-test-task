@@ -1,5 +1,4 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
-
 <style>
   .product-main-layout {
     display: flex;
@@ -134,82 +133,109 @@
   }
 </style>
 
-<div class="swiper product-swiper">
-  <div class="swiper-wrapper">
-    {% for media in product.media %}
-      {% if media.media_type == 'image' %}
-        <div class="swiper-slide" data-color="{{ media.alt | downcase }}">
-          <span class="color-badge">{{ media.alt }}</span>
-          {{ media | image_url: width: 500 | image_tag: alt: media.alt, class: 'product-image', loading: 'lazy' }}
-        </div>
-      {% endif %}
-    {% endfor %}
+<div class="product-gallery-container">
+  <div class="swiper product-swiper">
+    <div class="swiper-wrapper">
+      {% for image in product.images %}
+        {% if image.alt != blank %}
+          <div class="swiper-slide" data-color="{{ image.alt | downcase | strip }}">
+            {{ image | image_url: width: 800 | image_tag: alt: image.alt, class: 'product-image', loading: 'lazy' }}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if section.settings.show_navigation_arrows %}
+      <div class="swiper-button-next">&nbsp;</div>
+      <div class="swiper-button-prev">&nbsp;</div>
+    {% endif %}
+
+    {% if section.settings.show_pagination %}
+      <div class="swiper-pagination"></div>
+    {% endif %}
   </div>
-  <div class="swiper-button-next"></div>
-  <div class="swiper-button-prev"></div>
-  <div class="swiper-pagination"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
 <script>
-  let swiperInstance;
-  let originalSlidesHTML = [];
-
   document.addEventListener('DOMContentLoaded', () => {
-    const swiperWrapper = document.querySelector('.product-swiper .swiper-wrapper');
+    const galleryContainer = document.querySelector('.product-gallery-container');
+    const swiperElement = document.querySelector('.product-swiper');
+    if (!swiperElement) return;
 
-    originalSlidesHTML = Array.from(swiperWrapper.children).map((slide) => slide.outerHTML);
-
-    swiperInstance = new Swiper('.product-swiper', {
+    const swiperInstance = new Swiper(swiperElement, {
       loop: false,
-      spaceBetween: 10,
-      slidesPerView: 1,
-      breakpoints: {
-        768: { slidesPerView: 2, spaceBetween: 16 },
-        1200: { slidesPerView: 3, spaceBetween: 24 },
+      slidesPerView: {{ section.settings.slides_per_view_mobile | default: 1 }},
+      spaceBetween: {{ section.settings.space_between_mobile | default: 10 }},
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+        enabled: {{ section.settings.show_pagination | default: true | json }},
       },
       navigation: {
         nextEl: '.swiper-button-next',
         prevEl: '.swiper-button-prev',
+        enabled: {{ section.settings.show_navigation_arrows | default: true | json }},
       },
-      pagination: {
-        el: '.swiper-pagination',
-        clickable: true,
+      breakpoints: {
+        750: {
+          slidesPerView: {{ section.settings.slides_per_view_tablet | default: 2 }},
+          spaceBetween: {{ section.settings.space_between_tablet | default: 16 }},
+        },
+        990: {
+          slidesPerView: {{ section.settings.slides_per_view_desktop | default: 3 }},
+          spaceBetween: {{ section.settings.space_between_desktop | default: 20 }},
+        }
       },
+      observer: true,
+      observeParents: true
     });
 
-    function filterSlidesByVariant(variantTitle) {
-      let currentIndex = swiperInstance.activeIndex;
-
-      let filteredSlidesHTML = originalSlidesHTML.filter((slideHTML) => {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = slideHTML;
-        const slideDiv = tempDiv.querySelector('.swiper-slide');
-        if (!variantTitle) return true;
-        return slideDiv.getAttribute('data-color') === variantTitle.trim().toLowerCase();
+    function filterSlidesByColor(color) {
+      if (!color) return;
+      const normalizedColor = color.toLowerCase().trim();
+      swiperInstance.slides.forEach(slide => {
+        slide.style.display = (slide.dataset.color === normalizedColor) ? 'flex' : 'none';
       });
-
-      swiperInstance.removeAllSlides();
-
-      swiperInstance.appendSlide(filteredSlidesHTML);
-
       swiperInstance.update();
-
       swiperInstance.slideTo(0, 0);
     }
 
-    const colorRadios = document.querySelectorAll(
-      'input[type="radio"][name^="Color"], input[type="radio"][name^="Couleur"]'
-    );
-    colorRadios.forEach((radio) => {
-      radio.addEventListener('change', (e) => {
-        filterSlidesByVariant(e.target.value.toLowerCase());
-      });
+    // ----- ГЛАВНОЕ ИЗМЕНЕНИЕ: ДЕЛЕГИРОВАНИЕ СОБЫТИЙ -----
+    // Мы вешаем один слушатель на весь документ. Он не исчезнет при перерисовке.
+    document.addEventListener('click', (event) => {
+
+      const label = event.target.closest('fieldset.js.product-form__input label');
+
+
+      if (!label) {
+        return;
+      }
+
+      const inputId = label.getAttribute('for');
+      if (inputId) {
+        const correspondingInput = document.getElementById(inputId);
+        if (correspondingInput) {
+          const selectedColor = correspondingInput.value;
+          setTimeout(() => {
+            filterSlidesByColor(selectedColor);
+          }, 50);
+        }
+      }
     });
 
-    const checkedRadio = document.querySelector(
-      'input[type="radio"][name^="Color"]:checked, input[type="radio"][name^="Couleur"]:checked'
-    );
-    filterSlidesByVariant(checkedRadio ? checkedRadio.value.toLowerCase() : '');
+    const productForm = document.querySelector('form[action*="/cart/add"]');
+    if (productForm) {
+      const initialVariantId = productForm.querySelector('[name="id"]').value;
+      const productVariants = {{ product.variants | json }};
+      const initialVariant = productVariants.find(v => v.id == initialVariantId);
+      if (initialVariant && initialVariant.option1) {
+        setTimeout(() => {
+          filterSlidesByColor(initialVariant.option1);
+        }, 150);
+      }
+    }
+
+    galleryContainer.classList.add('loaded');
   });
 </script>
