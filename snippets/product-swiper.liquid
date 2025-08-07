@@ -1,137 +1,4 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
-<style>
-  .product-main-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    align-items: flex-start;
-  }
-  .gallery-container {
-    width: 100%;
-  }
-  .product-info {
-    width: 100%;
-  }
-  @media (min-width: 768px) {
-    .product-main-layout {
-      flex-direction: row;
-      justify-content: space-between;
-    }
-    .gallery-container,
-    .product-info {
-      flex: 1;
-    }
-    .gallery-container {
-      max-width: 50%;
-    }
-    .product-info {
-      padding-left: 20px;
-    }
-  }
-  .product-swiper {
-    width: 100%;
-    margin: 0 auto;
-    overflow: hidden;
-    position: relative;
-  }
-  .swiper-slide {
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    min-height: 320px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .swiper-slide:hover {
-    transform: scale(1.02);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  }
-  .product-swiper .swiper-slide:only-child {
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .product-image {
-    border-radius: 12px;
-    display: block;
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-  }
-  .color-badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    background: #e7f3e7;
-    color: #228b22;
-    font-size: 14px;
-    font-weight: 500;
-    padding: 2px 12px;
-    border-radius: 16px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    z-index: 2;
-    pointer-events: none;
-    border: 1px solid #d0e5d0;
-    letter-spacing: 0.03em;
-  }
-  .swiper-button-next,
-  .swiper-button-prev {
-    color: #333;
-    background-color: rgba(255, 255, 255, 0.85);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    top: 50%;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease;
-    position: absolute;
-  }
-  .swiper-button-next:hover,
-  .swiper-button-prev:hover {
-    background-color: rgba(240, 240, 240, 1);
-  }
-  .swiper-button-next::after,
-  .swiper-button-prev::after {
-    font-size: 24px;
-    font-weight: bold;
-  }
-  .swiper-button-next {
-    right: 10px;
-  }
-  .swiper-button-prev {
-    left: 10px;
-  }
-  .swiper-pagination {
-    position: absolute;
-    bottom: 10px;
-    left: 0;
-    width: 100%;
-    text-align: center;
-  }
-  @media (max-width: 767px) {
-    .product-swiper {
-      max-width: 100%;
-    }
-    .swiper-button-next,
-    .swiper-button-prev {
-      width: 32px;
-      height: 32px;
-      font-size: 18px;
-    }
-    .swiper-slide {
-      width: 140px;
-      min-height: 120px;
-      margin: 0 auto;
-    }
-    .color-badge {
-      font-size: 12px;
-      padding: 2px 8px;
-      top: 8px;
-      left: 8px;
-    }
-  }
-</style>
 
 <div class="product-gallery-container">
   <div class="swiper product-swiper">
@@ -178,12 +45,12 @@
         enabled: {{ section.settings.show_navigation_arrows | default: true | json }},
       },
       breakpoints: {
-        750: {
-          slidesPerView: {{ section.settings.slides_per_view_tablet | default: 2 }},
+        768: {
+          slidesPerView: {{ section.settings.slides_per_view_tablet | default: 1 }},
           spaceBetween: {{ section.settings.space_between_tablet | default: 16 }},
         },
-        990: {
-          slidesPerView: {{ section.settings.slides_per_view_desktop | default: 3 }},
+        1024: {
+          slidesPerView: {{ section.settings.slides_per_view_desktop | default: 1 }},
           spaceBetween: {{ section.settings.space_between_desktop | default: 20 }},
         }
       },
@@ -194,15 +61,31 @@
     function filterSlidesByColor(color) {
       if (!color) return;
       const normalizedColor = color.toLowerCase().trim();
+
+      // Карта цветов (оставляем по одному значению для каждого цвета)
+      const colorMap = {
+        'red': '#e93039',
+        'green': '#458c0e',
+        'yellow': '#d6a92e',
+        'blue': '#3182ce'
+      };
+
+      const borderColor = colorMap[normalizedColor] || '#1a202c';
+
       swiperInstance.slides.forEach(slide => {
-        slide.style.display = (slide.dataset.color === normalizedColor) ? 'flex' : 'none';
+        if (slide.dataset.color === normalizedColor) {
+          slide.style.display = 'flex';
+          slide.querySelector('img').style.border = `4px solid ${borderColor}`;
+        } else {
+          slide.style.display = 'none';
+          slide.querySelector('img').style.border = 'none';
+        }
       });
+
       swiperInstance.update();
       swiperInstance.slideTo(0, 0);
     }
 
-    // ----- ГЛАВНОЕ ИЗМЕНЕНИЕ: ДЕЛЕГИРОВАНИЕ СОБЫТИЙ -----
-    // Мы вешаем один слушатель на весь документ. Он не исчезнет при перерисовке.
     document.addEventListener('click', (event) => {
 
       const label = event.target.closest('fieldset.js.product-form__input label');
