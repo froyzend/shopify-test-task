@@ -3604,3 +3604,8 @@ details-disclosure>details {
     transform: translateX(100%) scaleX(0);
   }
 }
+
+.facets__summary .icon-caret {
+  width: 1.2rem;
+  height: 1.2rem;
+}
